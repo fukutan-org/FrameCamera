@@ -21,13 +21,13 @@ Be able to make picture with frame and support clipping of photo.
 
 ## usage
 
-it simply call static method as single line. use activity instance for argument
+it simply call method to launch camera activity. need activity instance for argument.
 ```groovy
 	CameraActivity.startCameraActivity(this)
 
 ```
 
-how to get result picture.
+how to get result picture?  
 simply call method as single line on activity result!
 ```groovy
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
