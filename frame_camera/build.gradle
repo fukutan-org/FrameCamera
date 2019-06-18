@@ -1,7 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.bintray-release'
+//apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.fukutan-org'
 
 android {
     compileSdkVersion 28
@@ -24,14 +27,14 @@ android {
     }
 }
 
-publish {
-    userOrg = 'fukutan'
-    groupId = 'org.fukutan.libs.framecamera'
-    artifactId = 'framecamera'
-    publishVersion = '0.1.0'
-    desc = 'take picture by camera'
-    website = ''
-}
+//publish {
+//    userOrg = 'fukutan'
+//    groupId = 'org.fukutan.libs.framecamera'
+//    artifactId = 'framecamera'
+//    publishVersion = '0.1.0'
+//    desc = 'take picture by camera'
+//    website = 'https://github.com/fukutan-org/FrameCamera'
+//}
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
