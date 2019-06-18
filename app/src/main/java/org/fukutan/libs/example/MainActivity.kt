@@ -11,12 +11,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        CameraActivity.startCameraActivity(activity)
+        CameraActivity.startCameraActivity(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         val bmp = CameraActivity.getResult(requestCode, resultCode, data)
+        bmp?.also {
+            // use bitmap
+        }
         finish()
     }
 }
