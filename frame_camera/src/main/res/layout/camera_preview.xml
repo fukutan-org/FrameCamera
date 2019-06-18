@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextureView
+            android:id="@+id/textureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <LinearLayout
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:background="#22000000"
+            android:gravity="center"
+            android:paddingTop="@dimen/LinearLayoutPaddingVertical"
+            android:paddingBottom="@dimen/LinearLayoutPaddingVertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <!-- TODO 前後ろの変換 -->
+
+        <ImageButton
+                android:id="@+id/shutterButton"
+                android:src="@drawable/circle_white"
+                android:background="@null"
+                android:layout_width="@dimen/ShutterButtonSize"
+                android:layout_height="@dimen/ShutterButtonSize"/>
+    </LinearLayout>
+
+</FrameLayout>
