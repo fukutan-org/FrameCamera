@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.fukutan.libs.framecamera">
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <application>
+        <activity
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+                android:name="org.fukutan.libs.framecamera.CameraActivity"/>
+    </application>
+</manifest>
