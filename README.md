@@ -1,4 +1,4 @@
-# FrameCamera [![Download](https://img.shields.io/github/release/fukutan-org/FrameCamera.svg)](https://github.com/fukutan-org/FrameCamera/releases) https://img.shields.io/badge/API-22-orange.svg
+# FrameCamera [![](https://jitpack.io/v/fukutan-org/FrameCamera.svg)](https://jitpack.io/#fukutan-org/FrameCamera) [![Apache License](http://img.shields.io/badge/license-Apache-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Wrapper library of camera2 api to use easily.
 
