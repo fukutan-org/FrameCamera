@@ -37,10 +37,10 @@ Add it in your root build.gradle at the end of repositories:
 Add the dependency
 ```groovy
     dependencies {
-    		implementation 'com.github.fukutan-org:FrameCamera:Tags'
+    		implementation 'com.github.fukutan-org:FrameCamera:0.1.0'
     }
 ```
-
+(latest version [![Release](https://jitpack.io/v/fukutan-org/FrameCamera.svg)](https://jitpack.io/#fukutan-org/FrameCamera))
 
 ## Usage
 
