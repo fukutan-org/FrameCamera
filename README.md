@@ -1,4 +1,4 @@
-# FrameCamera [![](https://jitpack.io/v/fukutan-org/FrameCamera.svg)](https://jitpack.io/#fukutan-org/FrameCamera) [![Apache License](http://img.shields.io/badge/license-Apache-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) [![](http://img.shields.io/badge/APILevel-22orlater-red.svg?style=flat)](https://github.com/fukutan-org/FrameCamera)
+# FrameCamera [![](https://jitpack.io/v/fukutan-org/FrameCamera.svg)](https://jitpack.io/#fukutan-org/FrameCamera) [![Apache License](http://img.shields.io/badge/license-Apache-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Wrapper library of camera2 api to use easily.
 
