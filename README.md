@@ -1,4 +1,4 @@
-# FrameCamera
+# FrameCamera [![Download](https://img.shields.io/github/release/fukutan-org/FrameCamera.svg)](https://github.com/fukutan-org/FrameCamera/releases)
 
 Wrapper library of camera2 api to use easily.
 
@@ -16,10 +16,29 @@ Be able to make picture with frame and support clipping of photo.
 * Touch focus, auto focus, continuous shooting.  
 * File explorer
 
-(above is not creat yet but will add soon...maybe)
+(above is not created yet but will add soon...maybe)
+
+## How to install
+
+Add it in your root build.gradle at the end of repositories:
+```groovy
+    allprojects {
+    		repositories {
+    			...
+    			maven { url 'https://jitpack.io' }
+    		}
+    }
+```
+
+Add the dependency
+```groovy
+    dependencies {
+    		implementation 'com.github.fukutan-org:FrameCamera:Tag'
+    }
+```
 
 
-## usage
+## Usage
 
 it simply call method to launch camera activity. need activity instance for argument.
 ```groovy
@@ -28,7 +47,7 @@ it simply call method to launch camera activity. need activity instance for argu
 ```
 
 how to get result picture?  
-simply call method as single line on activity result!
+call below method as single line within activity result
 ```groovy
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
@@ -36,6 +55,21 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
     }
 ```
   
-### Support 
-Android API level 21 or later.  
-front camera, back camera.
+## requirements
+Android API level 22 or later.
+Front camera or Back camera.
+
+# License
+Copyright 2019 fukutan-org.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    <http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
