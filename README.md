@@ -1,4 +1,4 @@
-# FrameCamera [![Download](https://img.shields.io/github/release/fukutan-org/FrameCamera.svg)](https://github.com/fukutan-org/FrameCamera/releases)
+# FrameCamera [![Download](https://img.shields.io/github/release/fukutan-org/FrameCamera.svg)](https://github.com/fukutan-org/FrameCamera/releases) https://img.shields.io/badge/API-22-orange.svg
 
 Wrapper library of camera2 api to use easily.
 
@@ -17,6 +17,10 @@ Be able to make picture with frame and support clipping of photo.
 * File explorer
 
 (above is not created yet but will add soon...maybe)
+
+## Requirements
+Android API level 22 or later.
+Front camera or Back camera.
 
 ## How to install
 
@@ -54,19 +58,16 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 	val bmp = CameraActivity.getResult(requestCode, resultCode, data)
     }
 ```
-  
-## requirements
-Android API level 22 or later.
-Front camera or Back camera.
 
-# License
+
+## License
 Copyright 2019 fukutan-org.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    <http://www.apache.org/licenses/LICENSE-2.0>
+    (http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
