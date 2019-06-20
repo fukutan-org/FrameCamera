@@ -10,20 +10,22 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.media.ImageReader
 import android.util.Size
+import android.view.MotionEvent
 import android.view.Surface
+import android.view.View
 import org.fukutan.libs.framecamera.enums.CameraType
 import java.io.FileOutputStream
 
 class Camera(private val context: Context, private var surfaceTexture: SurfaceTexture? = null) {
 
     private var cameraDevice: CameraDevice? = null
-    private var cameraManager: CameraManager =
-        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    private var cameraManager: CameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     private var captureSession: CameraCaptureSession? = null
     private var usingCameraType: CameraType = CameraType.BACK
     private var imageReader: ImageReader? = null
     private var repeatingRequest: CaptureRequest? = null
 
+    private lateinit var cameraTouchEvent: CameraTouchEvent
     private lateinit var cameraSize: Size
     private lateinit var cameraId: String
 
@@ -87,32 +89,42 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
             return
         }
 
-        val format = CameraUtil.checkPhotoFormat(cameraId, cameraManager, ImageFormat.JPEG) ?: return
-        imageReader = ImageReader.newInstance(cameraSize.width, cameraSize.height, format, 1) ?: return
-        imageReader?.setOnImageAvailableListener({
+        cameraDevice?.also { device ->
 
-            saveCaptureImage()
-        },null)
+            val format = CameraUtil.checkPhotoFormat(cameraId, cameraManager, ImageFormat.JPEG) ?: return
+            imageReader = ImageReader.newInstance(cameraSize.width, cameraSize.height, format, 1) ?: return
+            imageReader?.also {
 
-        val texture = surfaceTexture
-        texture?.setDefaultBufferSize(cameraSize.width, cameraSize.height)
-        val surface = Surface(texture)
-
-        val builder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        builder.addTarget(surface)
-        val request = builder.build()
-        repeatingRequest = request
-
-        val surfaceList = listOf(surface, imageReader?.surface)
-        cameraDevice?.createCaptureSession(surfaceList, object : CameraCaptureSession.StateCallback() {
-
-            override fun onConfigureFailed(session: CameraCaptureSession) {}
-
-            override fun onConfigured(session: CameraCaptureSession) {
-                captureSession = session
-                captureSession?.setRepeatingRequest(request, null, null)
+                it.setOnImageAvailableListener({ saveCaptureImage() },null)
+                cameraTouchEvent = CameraTouchEvent(device, it.surface)
             }
-        }, null)
+
+            val texture = surfaceTexture
+            texture?.setDefaultBufferSize(cameraSize.width, cameraSize.height)
+            val surface = Surface(texture)
+
+            val builder = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            builder.addTarget(surface)
+            val request = builder.build()
+            repeatingRequest = request
+
+            val surfaceList = listOf(surface, imageReader?.surface)
+            device.createCaptureSession(surfaceList, object : CameraCaptureSession.StateCallback() {
+
+                override fun onConfigureFailed(session: CameraCaptureSession) {}
+
+                override fun onConfigured(session: CameraCaptureSession) {
+                    captureSession = session
+                    captureSession?.setRepeatingRequest(request, null, null)
+                }
+            }, null)
+        }
+    }
+
+    fun startTouchFocus(v: View, event: MotionEvent) : Boolean {
+
+        val characteristics = CameraUtil.cameraCharacteristics(cameraManager, cameraId)
+        return cameraTouchEvent.setFocus(captureSession, characteristics, v, event)
     }
 
     fun capture() {
@@ -134,8 +146,9 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
                     val orientation = CameraUtil.getJpegOrientation(characteristic, dOrientation)
                     builder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
 
+                    val cameraCallback = CameraCaptureCallback(cameraTouchEvent, imageReader, context)
                     session.stopRepeating()
-                    session.capture(builder.build(), CameraCaptureCallback(imageReader, context), null)
+                    session.capture(builder.build(), cameraCallback, null)
                 }
             }
         }
@@ -150,7 +163,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
             buffer.get(bytes)
 
             // 画像の書き込み
-            val file = CameraUtil.makePhotoFilePathInTemporaryDirectory(context)
+            val file = CameraUtil.makePhotoFilePathForCacheDirectory(context)
             val output = FileOutputStream( file )
             output.write(bytes)
             output.close()
