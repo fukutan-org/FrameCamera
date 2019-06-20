@@ -6,8 +6,8 @@ import android.media.ImageReader
 
 
 class CameraCaptureCallback(
-    private val jpegImageReader: ImageReader?,
-    context: Context) : CameraCaptureSession.CaptureCallback() {
+    private val cameraTouchEvent: CameraTouchEvent,
+    private val jpegImageReader: ImageReader?, context: Context) : CameraCaptureSession.CaptureCallback() {
 
     private var soundPlayer = SoundPlayer(context.assets.openFd("sound_shutter.wav"))
 
@@ -17,7 +17,22 @@ class CameraCaptureCallback(
         result: TotalCaptureResult
     ) {
 
-        if (jpegImageReader == null) { return }
+        if (jpegImageReader == null) {
+            return
+        }
+
         soundPlayer.play()
+        cameraTouchEvent.falseManualFocusEngaged()
+
+        if (request.tag == CameraTouchEvent.FOCUS_TAG) {
+            //the focus trigger is complete -
+            //resume repeating (preview surface will get frames), clear AF trigger
+            cameraTouchEvent.clearAutoFocusTrigger(session)
+        }
+    }
+
+    override fun onCaptureFailed(session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure) {
+        super.onCaptureFailed(session, request, failure)
+        cameraTouchEvent.falseManualFocusEngaged()
     }
 }

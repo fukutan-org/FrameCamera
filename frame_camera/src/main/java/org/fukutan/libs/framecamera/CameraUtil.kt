@@ -4,7 +4,10 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.params.MeteringRectangle
 import android.util.Size
+import android.view.MotionEvent
+import android.view.View
 import org.fukutan.libs.framecamera.enums.CameraType
 import java.io.File
 
@@ -52,7 +55,7 @@ class CameraUtil {
             return null
         }
 
-        fun makePhotoFilePathInTemporaryDirectory(context: Context) : File {
+        fun makePhotoFilePathForCacheDirectory(context: Context) : File {
 
             val name = PREFIX + System.currentTimeMillis().toString()
             return File(context.cacheDir.path + File.separator + name + EXTENSION)
@@ -75,6 +78,41 @@ class CameraUtil {
             // the image upright relative to the device orientation
 
             return (sensorOrientation + orientation + 360) % 360
+        }
+
+        fun cameraCharacteristics(manager: CameraManager, cameraId: String) : CameraCharacteristics {
+
+            return manager.getCameraCharacteristics(cameraId)
+        }
+
+        fun getFocusAreaRectAngleForTouchMode(c: CameraCharacteristics, event: MotionEvent, touchView: View) : MeteringRectangle? {
+
+            val sensorArraySize = c.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+            sensorArraySize?.also {
+
+                val y = (event.x / touchView.width.toFloat() * sensorArraySize.height().toFloat()).toInt()
+                val x = (event.y / touchView.height.toFloat() * sensorArraySize.width().toFloat()).toInt()
+
+                val halfTouchWidth = 150 //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
+                val halfTouchHeight = 150 //(int)motionEvent.getTouchMinor();
+
+                return MeteringRectangle(
+                    Math.max(x - halfTouchWidth, 0),
+                    Math.max(y - halfTouchHeight, 0),
+                    halfTouchWidth * 2,
+                    halfTouchHeight * 2,
+                    MeteringRectangle.METERING_WEIGHT_MAX - 1
+                )
+            }
+            return null
+        }
+
+        fun isMeteringAreaAFSupported(c: CameraCharacteristics): Boolean {
+            val r = c.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
+            if (r is Int) {
+                return r >= 1
+            }
+            return false
         }
     }
 }

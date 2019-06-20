@@ -1,7 +1,6 @@
 package org.fukutan.libs.framecamera
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,14 +13,13 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
 import android.view.TextureView
-import android.view.View
 import android.view.Window
 import android.view.animation.AnimationUtils
 import kotlinx.android.synthetic.main.camera_preview.*
 
 class CameraActivity : AppCompatActivity() {
 
-    private var shutterClickListener: (() -> Unit)? = null
+    private var shutterClick: (() -> Unit)? = null
     private lateinit var camera: Camera
 
     companion object {
@@ -78,33 +76,39 @@ class CameraActivity : AppCompatActivity() {
         val small = AnimationUtils.loadAnimation(this, R.anim.down_scale)
         val normal = AnimationUtils.loadAnimation(this, R.anim.normal_scale)
 
-        shutterButton.setOnTouchListener(object : View.OnTouchListener {
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                when (event!!.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        shutterClickListener?.also { v?.startAnimation(small) }
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        v?.startAnimation(normal)
-                        shutterClickListener?.invoke()
-                    }
-                    MotionEvent.ACTION_CANCEL -> {
-                        v?.startAnimation(normal)
-                    }
+        shutterButton.setOnTouchListener { v, event ->
+            when (event!!.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    shutterClick?.also { v?.startAnimation(small) }
                 }
-                return true
+                MotionEvent.ACTION_UP -> {
+                    v?.startAnimation(normal)
+                    shutterClick?.invoke()
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    v?.startAnimation(normal)
+                }
             }
-        })
-
+            true
+        }
         setShutterEvent()
+
+        textureView.setOnTouchListener { v, event ->
+
+            when (event!!.action) {
+                MotionEvent.ACTION_UP -> {
+                    camera.startTouchFocus(v, event)
+                }
+            }
+            true
+        }
     }
 
     private fun setShutterEvent() {
 
-        if (shutterClickListener == null) {
-            shutterClickListener = {
-                shutterClickListener = null
+        if (shutterClick == null) {
+            shutterClick = {
+                shutterClick = null
                 camera.capture()
             }
         }
