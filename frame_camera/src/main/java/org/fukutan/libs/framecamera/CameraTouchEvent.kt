@@ -4,6 +4,7 @@ import android.hardware.camera2.*
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
+import org.fukutan.libs.framecamera.util.CameraUtil
 
 class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
 

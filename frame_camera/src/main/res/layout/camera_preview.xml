@@ -3,7 +3,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <TextureView
+    <org.fukutan.libs.framecamera.view.AutoFitTextureView
             android:id="@+id/textureView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        <!-- TODO 前後ろの変換 -->
+        <!-- TODO 前と後ろのカメラを切り替えるボタンの追加 -->
 
         <ImageButton
                 android:id="@+id/shutterButton"
