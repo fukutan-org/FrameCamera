@@ -1,4 +1,4 @@
-package org.fukutan.libs.framecamera
+package org.fukutan.libs.framecamera.util
 
 import android.content.Context
 import android.view.WindowManager

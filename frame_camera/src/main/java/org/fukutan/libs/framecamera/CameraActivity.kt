@@ -123,7 +123,7 @@ class CameraActivity : AppCompatActivity() {
         super.onResume()
 
         if (textureView.isAvailable) {
-            camera.openCamera(textureView.surfaceTexture)
+            camera.openCamera(this@CameraActivity, textureView)
         } else {
 
             textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
@@ -135,7 +135,7 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
-                    camera.openCamera(textureView.surfaceTexture)
+                    camera.openCamera(this@CameraActivity, textureView)
                 }
             }
         }
@@ -165,7 +165,7 @@ class CameraActivity : AppCompatActivity() {
         when (requestCode) {
             REQUEST_CODE -> {
                 if (grantResults.first() == PackageManager.PERMISSION_GRANTED) {
-                    camera.openCamera(textureView.surfaceTexture)
+                    camera.openCamera(this@CameraActivity, textureView)
                 } else {
                     failedOpenCamera("Camera Permission is not granted")
                 }
