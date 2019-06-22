@@ -63,7 +63,7 @@ class CameraActivity : AppCompatActivity() {
         setContentView(R.layout.camera_preview)
 
         setupUI()
-        super.onAttachedToWindow()
+        textureView.scaleX = 1.00001f
         camera = Camera(this, textureView.surfaceTexture)
         camera.setErrorSender(::failedOpenCamera)
         camera.setPermissionChecker(::requestCameraPermission)
