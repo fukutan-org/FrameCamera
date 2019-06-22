@@ -14,7 +14,6 @@ import android.media.ImageReader
 import android.util.Size
 import android.view.MotionEvent
 import android.view.Surface
-import android.view.TextureView
 import android.view.View
 import org.fukutan.libs.framecamera.enums.CameraType
 import org.fukutan.libs.framecamera.util.CameraUtil
@@ -22,7 +21,7 @@ import org.fukutan.libs.framecamera.util.Util
 import org.fukutan.libs.framecamera.view.AutoFitTextureView
 import java.io.FileOutputStream
 import android.hardware.camera2.CameraCharacteristics
-
+import org.fukutan.libs.framecamera.util.CaptureRequestUtil
 
 
 class Camera(private val context: Context, private var surfaceTexture: SurfaceTexture? = null) {
@@ -135,9 +134,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
             texture?.setDefaultBufferSize(previewSize.width, previewSize.height)
             val surface = Surface(texture)
 
-            val builder = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            builder.addTarget(surface)
-            setAutoFlash(builder)
+            val builder = CaptureRequestUtil.getAutoFocusBuilderForPreview(device, surface)
             val request = builder.build()
             repeatingRequest = request
 
