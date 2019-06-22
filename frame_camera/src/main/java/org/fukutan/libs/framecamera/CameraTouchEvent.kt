@@ -5,6 +5,7 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
 import org.fukutan.libs.framecamera.util.CameraUtil
+import org.fukutan.libs.framecamera.util.CaptureRequestUtil
 
 class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
 
@@ -17,19 +18,9 @@ class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
     private val touchFocusBuilder: CaptureRequest.Builder
 
     init {
-        val b = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        b.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
-        b.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
-        b.addTarget(targetSurface)
-        autoFocusCancelRequest = b.build()
-
-        touchFocusBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        touchFocusBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
-//        touchFocusBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
-        touchFocusBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-        touchFocusBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
-        touchFocusBuilder.setTag(FOCUS_TAG) //we'll capture this later for resuming the preview
-        touchFocusBuilder.addTarget(targetSurface)
+        autoFocusCancelRequest =
+            CaptureRequestUtil.getAutoFocusCancelBuilderForPreview(cameraDevice, targetSurface).build()
+        touchFocusBuilder = CaptureRequestUtil.getRegionAutoFocusBuilderForPreview(cameraDevice, targetSurface)
     }
 
     fun falseManualFocusEngaged() {
@@ -53,16 +44,11 @@ class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
         }
 
         session?.also {
-
-            //  stop auto focus preview
             it.stopRepeating()
-
-            //  cancel auto focus
             it.capture(autoFocusCancelRequest, null, null)
 
             //  start auto focus at touch point
             if (CameraUtil.isMeteringAreaAFSupported(c)) {
-
                 val focusAreaTouch = CameraUtil.getFocusAreaRectAngleForTouchMode(c, motionEvent, view)
                 touchFocusBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, arrayOf(focusAreaTouch))
             }
