@@ -23,6 +23,10 @@ import android.opengl.ETC1.getWidth
 import android.opengl.ETC1.getHeight
 import android.R.attr.orientation
 import android.content.res.Configuration
+import android.util.Range
+import android.hardware.camera2.CameraAccessException
+
+
 
 
 class CameraUtil {
@@ -252,6 +256,31 @@ class CameraUtil {
                 Log.e("CameraUtil", "Couldn't find any suitable preview size")
                 return choices[0]
             }
+        }
+
+        fun getRange(chars: CameraCharacteristics): Range<Int>? {
+
+            try {
+                val ranges = chars.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)
+                var result: Range<Int>? = null
+                for (range in ranges!!) {
+                    val upper = range.upper
+                    // 10 - min range upper for my needs
+                    if (upper >= 10) {
+                        if (result == null || upper < result.upper.toInt()) {
+                            result = range
+                        }
+                    }
+                }
+                if (result == null) {
+                    result = ranges[0]
+                }
+                return result
+            } catch (e: CameraAccessException) {
+                e.printStackTrace()
+                return null
+            }
+
         }
     }
 }

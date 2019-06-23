@@ -5,9 +5,9 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
 import org.fukutan.libs.framecamera.util.CameraUtil
-import org.fukutan.libs.framecamera.util.CaptureRequestUtil
+import org.fukutan.libs.framecamera.util.CaptureRequestHelper
 
-class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
+class CameraTouchEvent(requestHelper: CaptureRequestHelper) {
 
     companion object {
         const val FOCUS_TAG = "FOCUS_TAG"
@@ -18,9 +18,8 @@ class CameraTouchEvent(cameraDevice: CameraDevice, targetSurface: Surface) {
     private val touchFocusBuilder: CaptureRequest.Builder
 
     init {
-        autoFocusCancelRequest =
-            CaptureRequestUtil.getAutoFocusCancelBuilderForPreview(cameraDevice, targetSurface).build()
-        touchFocusBuilder = CaptureRequestUtil.getRegionAutoFocusBuilderForPreview(cameraDevice, targetSurface)
+        autoFocusCancelRequest = requestHelper.getAutoFocusCancelBuilderForPreview().build()
+        touchFocusBuilder = requestHelper.getRegionAutoFocusBuilderForPreview()
     }
 
     fun falseManualFocusEngaged() {
