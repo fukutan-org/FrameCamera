@@ -21,7 +21,7 @@ import org.fukutan.libs.framecamera.util.Util
 import org.fukutan.libs.framecamera.view.AutoFitTextureView
 import java.io.FileOutputStream
 import android.hardware.camera2.CameraCharacteristics
-import org.fukutan.libs.framecamera.util.CaptureRequestUtil
+import org.fukutan.libs.framecamera.util.CaptureRequestHelper
 
 
 class Camera(private val context: Context, private var surfaceTexture: SurfaceTexture? = null) {
@@ -128,13 +128,14 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
                 saveCaptureImage()
             }, null)
 
-            cameraTouchEvent = CameraTouchEvent(device, imageReader.surface)
-
             val texture = surfaceTexture
             texture?.setDefaultBufferSize(previewSize.width, previewSize.height)
             val surface = Surface(texture)
 
-            val builder = CaptureRequestUtil.getAutoFocusBuilderForPreview(device, surface)
+            val requestHelper = CaptureRequestHelper(device, surface, cameraCharacteristics)
+            cameraTouchEvent = CameraTouchEvent(requestHelper)
+
+            val builder = requestHelper.getAutoFocusBuilderForPreview()
             val request = builder.build()
             repeatingRequest = request
 
@@ -186,7 +187,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
                         CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
 
-                    val characteristic = cameraManager.getCameraCharacteristics(cameraId)
+                    val characteristic = cameraCharacteristics
                     val dOrientation = Util.getDeviceOrientation(context)
                     val orientation = CameraUtil.getJpegOrientation(characteristic, dOrientation)
                     builder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
