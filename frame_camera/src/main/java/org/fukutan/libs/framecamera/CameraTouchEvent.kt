@@ -1,8 +1,9 @@
 package org.fukutan.libs.framecamera
 
-import android.hardware.camera2.*
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CaptureRequest
 import android.view.MotionEvent
-import android.view.Surface
 import android.view.View
 import org.fukutan.libs.framecamera.util.CameraUtil
 import org.fukutan.libs.framecamera.util.CaptureRequestHelper
@@ -16,6 +17,8 @@ class CameraTouchEvent(requestHelper: CaptureRequestHelper) {
     private var manualFocusEngaged = false
     private val autoFocusCancelRequest: CaptureRequest
     private val touchFocusBuilder: CaptureRequest.Builder
+    val touchFocusRequest: CaptureRequest
+    get() = touchFocusBuilder.build()
 
     init {
         autoFocusCancelRequest = requestHelper.getAutoFocusCancelBuilderForPreview().build()
@@ -52,6 +55,7 @@ class CameraTouchEvent(requestHelper: CaptureRequestHelper) {
                 touchFocusBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, arrayOf(focusAreaTouch))
             }
             it.capture(touchFocusBuilder.build(), null, null)
+            it.setRepeatingRequest(touchFocusBuilder.build(), null, null)
 
             manualFocusEngaged = true
             return true

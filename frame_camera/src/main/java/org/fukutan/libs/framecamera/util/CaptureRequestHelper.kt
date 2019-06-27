@@ -3,7 +3,7 @@ package org.fukutan.libs.framecamera.util
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraMetadata
-import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.CaptureRequest.*
 import android.view.Surface
 import org.fukutan.libs.framecamera.CameraTouchEvent
 
@@ -12,65 +12,72 @@ class CaptureRequestHelper (
     private  val surface: Surface,
     private  val characteristics: CameraCharacteristics) {
 
-    fun getAutoFocusCancelBuilderForPreview() : CaptureRequest.Builder {
+    companion object {
+        private const val JPEG_QUALITY_100: Byte = 100
+    }
+
+    fun getAutoFocusCancelBuilderForPreview() : Builder {
 
         val b = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         b.apply {
-            set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
+            set(CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
+            set(CONTROL_AF_MODE, CONTROL_AF_MODE_OFF)
             addTarget(surface)
         }
 
         return b
     }
 
-    fun getRegionAutoFocusBuilderForPreview() : CaptureRequest.Builder {
+    fun getRegionAutoFocusBuilderForPreview() : Builder {
 
         val b = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         b.apply {
-            set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
-            set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, CameraUtil.getRange(characteristics))
-            setTag(CameraTouchEvent.FOCUS_TAG) //we'll capture this later for resuming the preview
-            set(CaptureRequest.JPEG_QUALITY, 100.toByte())
-            set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_HIGH_QUALITY)
-            set(CaptureRequest.SHADING_MODE, CameraMetadata.SHADING_MODE_HIGH_QUALITY)
-            set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_HIGH_QUALITY)
-            set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
-            set(CaptureRequest.COLOR_CORRECTION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
-            set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY)
-            set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY)
-            set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON)
+            addTarget(surface)
+            setTag(CameraTouchEvent.FOCUS_TAG)      //we'll capture this later for resuming the preview
+            set(CONTROL_MODE,                       CONTROL_MODE_AUTO)
+            set(CONTROL_AF_MODE,                    CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+            set(CONTROL_AF_TRIGGER,                 CONTROL_AF_TRIGGER_START)
+            setAutoExposure(b)
+            setHighQuality(b)
+        }
+
+        return b
+    }
+
+    fun getAutoFocusBuilderForPreview() : Builder {
+
+        val b = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+        b.apply {
+            set(CONTROL_AF_MODE, CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+            setAutoExposure(b)
+            setHighQuality(b)
             addTarget(surface)
         }
 
         return b
     }
 
-    fun getAutoFocusBuilderForPreview() : CaptureRequest.Builder {
+    private fun setHighQuality(b: Builder) {
 
-        val b = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         b.apply {
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            set(CaptureRequest.JPEG_QUALITY, 100.toByte())
-            set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, CameraUtil.getRange(characteristics))
-            set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_HIGH_QUALITY)
-            set(CaptureRequest.SHADING_MODE, CameraMetadata.SHADING_MODE_HIGH_QUALITY)
-            set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_HIGH_QUALITY)
-            set(
-                CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
-                CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY
-            )
-            set(CaptureRequest.COLOR_CORRECTION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
-            set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY)
-            set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY)
-            set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON)
-            addTarget(surface)
-        }
+            set(JPEG_QUALITY,   JPEG_QUALITY_100)
+            set(EDGE_MODE,      EDGE_MODE_HIGH_QUALITY)
+            set(SHADING_MODE,   SHADING_MODE_HIGH_QUALITY)
+            set(TONEMAP_MODE,   TONEMAP_MODE_HIGH_QUALITY)
+            set(HOT_PIXEL_MODE, HOT_PIXEL_MODE_HIGH_QUALITY)
 
-        return b
+            set(COLOR_CORRECTION_MODE,  COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
+            set(NOISE_REDUCTION_MODE,   NOISE_REDUCTION_MODE_HIGH_QUALITY)
+
+            set(COLOR_CORRECTION_ABERRATION_MODE,   COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
+            set(LENS_OPTICAL_STABILIZATION_MODE,    LENS_OPTICAL_STABILIZATION_MODE_ON)
+        }
+    }
+
+    private fun setAutoExposure(b: Builder) {
+        b.apply {
+            set(CONTROL_AE_MODE, CONTROL_AE_MODE_ON)
+            set(CONTROL_AE_TARGET_FPS_RANGE, CameraUtil.getRange(characteristics))
+        }
     }
 }

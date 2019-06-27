@@ -43,10 +43,14 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     private var permissionChecker: (() -> Boolean)? = null
     private var errorSender: ((message: String) -> Unit)? = null
     private var callBackForCaptured: (() -> Unit)? = null
-
     private val cameraCharacteristics: CameraCharacteristics
     get() {
         return cameraManager.getCameraCharacteristics(cameraId)
+    }
+    private val _fileList = mutableListOf<String>()
+    val fileList: Array<String>?
+    get() {
+        return if (_fileList.isEmpty()) null else _fileList.toTypedArray()
     }
 
     fun setPermissionChecker(checker: () -> Boolean) {
@@ -149,7 +153,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
                     }
 
                     captureSession = session
-                    captureSession?.setRepeatingRequest(request, null, null)
+                    captureSession?.setRepeatingRequest(repeatingRequest, null, null)
                 }
                 override fun onConfigureFailed(session: CameraCaptureSession) {}
             }, null)
@@ -159,7 +163,9 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     fun startTouchFocus(v: View, event: MotionEvent) : Boolean {
 
         val characteristics = cameraCharacteristics
-        return cameraTouchEvent.setFocus(captureSession, characteristics, v, event)
+        val ret = cameraTouchEvent.setFocus(captureSession, characteristics, v, event)
+        repeatingRequest = cameraTouchEvent.touchFocusRequest
+        return ret
     }
 
     private fun setAutoFlash(requestBuilder: CaptureRequest.Builder) {
@@ -217,6 +223,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
             img.close()
 
             callBackForCaptured?.invoke()
+            _fileList.add(file.path)
             repeatingRequest?.also { request ->
                 captureSession?.setRepeatingRequest(request, null, null)
             }

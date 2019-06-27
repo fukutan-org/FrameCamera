@@ -93,15 +93,15 @@ class CameraActivity : AppCompatActivity() {
         }
         setShutterEvent()
 
-//        textureView.setOnTouchListener { v, event ->
-//
-//            when (event!!.action) {
-//                MotionEvent.ACTION_UP -> {
-//                    camera.startTouchFocus(v, event)
-//                }
-//            }
-//            true
-//        }
+        textureView.setOnTouchListener { v, event ->
+
+            when (event!!.action) {
+                MotionEvent.ACTION_UP -> {
+                    camera.startTouchFocus(v, event)
+                }
+            }
+            true
+        }
     }
 
     private fun setShutterEvent() {
