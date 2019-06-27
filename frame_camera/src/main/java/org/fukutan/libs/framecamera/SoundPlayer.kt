@@ -9,7 +9,9 @@ import android.util.Log
 
 class SoundPlayer(descriptor: AssetFileDescriptor) {
 
-//    private val player: MediaPlayer
+    companion object {
+        private const val TAG = "SoundPlayer"
+    }
     private val player: SoundPool
     private val soundId: Int
     private var loaded = false
@@ -32,23 +34,13 @@ class SoundPlayer(descriptor: AssetFileDescriptor) {
                 loaded = true
             }
         }
-
-//        val mp = MediaPlayer()
-//        mp.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
-//        mp.setOnPreparedListener {
-//            Log.d("MusicPlayer", "OnPrepared")
-//        }
-//        mp.prepareAsync()
-//        mp.isLooping = false
-//
-//        player = mp
     }
 
     fun play() {
         if (loaded) {
             player.play(soundId, 1.0f, 1.0f, 0, 0, 1f)
         } else {
-            // TODO
+            Log.d(TAG, "sound file was not loaded yet")
         }
     }
 }
