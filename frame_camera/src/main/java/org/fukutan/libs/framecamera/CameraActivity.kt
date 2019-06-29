@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -22,9 +23,24 @@ class CameraActivity : AppCompatActivity() {
     private var shutterClick: (() -> Unit)? = null
     private lateinit var camera: Camera
 
+    class CaptureImageResult(fileList: ArrayList<String>?) {
+
+        private val iterator: Iterator<String>?
+        var filePathList: List<String>? = null
+        init {
+            filePathList = fileList?.toList()
+            iterator = filePathList?.iterator()
+        }
+
+        fun nextImage() : Bitmap? {
+            return BitmapFactory.decodeFile(iterator?.next())
+        }
+    }
+
     companion object {
         private const val REQUEST_CODE = 1
         private const val TAG = "CameraActivity"
+        private const val BUNDLE_KEY = "CaptureFilePathList"
 
         const val REQUEST_CODE_CAMERA = 1000
         const val RESULT_FAILED = -1000
@@ -33,16 +49,17 @@ class CameraActivity : AppCompatActivity() {
         fun startCameraActivity(activity: Activity) {
 
             val intent = Intent(activity, CameraActivity::class.java)
-            activity.startActivityForResult(intent, REQUEST_CODE)
+            activity.startActivityForResult(intent, REQUEST_CODE_CAMERA)
         }
 
-        fun getResult(requestCode: Int, resultCode: Int, data: Intent?) : Bitmap? {
+        fun getResult(requestCode: Int, resultCode: Int, data: Intent?) : CaptureImageResult? {
 
             if (requestCode == REQUEST_CODE_CAMERA) {
 
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-
+                        val fileList = data?.getStringArrayListExtra(BUNDLE_KEY)
+                        return fileList?.let { CaptureImageResult(fileList) }
                     }
                     RESULT_FAILED -> {
                         return null
@@ -67,7 +84,7 @@ class CameraActivity : AppCompatActivity() {
         camera = Camera(this, textureView.surfaceTexture)
         camera.setErrorSender(::failedOpenCamera)
         camera.setPermissionChecker(::requestCameraPermission)
-        camera.setCapturedCallback(::captureCallBack)
+        camera.setCapturedCallback(::onSuccessCapture)
 
         actionBar?.hide()
     }
@@ -114,9 +131,12 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private fun captureCallBack() {
+    private fun onSuccessCapture() {
 
         setShutterEvent()
+        val data = Intent()
+        data.putExtra(BUNDLE_KEY, camera.fileList)
+        setResult(Activity.RESULT_OK, data)
     }
 
     override fun onResume() {
@@ -177,5 +197,10 @@ class CameraActivity : AppCompatActivity() {
         Log.e(TAG, error)
         setResult(RESULT_FAILED)
         finish()
+    }
+
+    override fun onBackPressed() {
+        camera.close()
+        super.onBackPressed()
     }
 }

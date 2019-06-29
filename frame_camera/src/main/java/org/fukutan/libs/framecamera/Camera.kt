@@ -42,15 +42,17 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
 
     private var permissionChecker: (() -> Boolean)? = null
     private var errorSender: ((message: String) -> Unit)? = null
-    private var callBackForCaptured: (() -> Unit)? = null
+    private var onSuccessCapture: (() -> Unit)? = null
+    private var soundPlayer = SoundPlayer(context.assets.openFd("sound_shutter.wav"))
+
     private val cameraCharacteristics: CameraCharacteristics
     get() {
         return cameraManager.getCameraCharacteristics(cameraId)
     }
     private val _fileList = mutableListOf<String>()
-    val fileList: Array<String>?
+    val fileList: ArrayList<String>?
     get() {
-        return if (_fileList.isEmpty()) null else _fileList.toTypedArray()
+        return if (_fileList.isEmpty()) null else ArrayList(_fileList.reversed())
     }
 
     fun setPermissionChecker(checker: () -> Boolean) {
@@ -62,7 +64,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     }
 
     fun setCapturedCallback(callback: () -> Unit) {
-        callBackForCaptured = callback
+        onSuccessCapture = callback
     }
 
     @SuppressLint("MissingPermission")
@@ -79,6 +81,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
         val info = CameraUtil.getCameraInfo(cameraManager, usingCameraType)
         if (info == null) {
             errorSender?.invoke("camera id was not found, Camera type is ${usingCameraType.name}")
+            close()
             return
         }
 
@@ -209,6 +212,9 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     private fun saveCaptureImage() {
 
         imageReader.also {
+
+            soundPlayer.play()
+
             val img = it.acquireLatestImage()
             val buffer = img.planes[0].buffer
             val bytes = ByteArray(buffer.capacity())
@@ -222,11 +228,23 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
 
             img.close()
 
-            callBackForCaptured?.invoke()
             _fileList.add(file.path)
+            onSuccessCapture?.invoke()
+
             repeatingRequest?.also { request ->
                 captureSession?.setRepeatingRequest(request, null, null)
             }
         }
+    }
+
+    fun close() {
+
+        captureSession?.stopRepeating()
+        captureSession?.close()
+        imageReader.close()
+        permissionChecker = null
+        errorSender = null
+        onSuccessCapture = null
+        cameraDevice?.close()
     }
 }

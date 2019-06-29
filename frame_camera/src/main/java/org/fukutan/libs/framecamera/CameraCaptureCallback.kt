@@ -9,8 +9,6 @@ class CameraCaptureCallback(
     private val cameraTouchEvent: CameraTouchEvent,
     private val jpegImageReader: ImageReader?, context: Context) : CameraCaptureSession.CaptureCallback() {
 
-    private var soundPlayer = SoundPlayer(context.assets.openFd("sound_shutter.wav"))
-
     override fun onCaptureCompleted(
         session: CameraCaptureSession,
         request: CaptureRequest,
@@ -21,7 +19,6 @@ class CameraCaptureCallback(
             return
         }
 
-        soundPlayer.play()
         cameraTouchEvent.falseManualFocusEngaged()
 
         if (request.tag == CameraTouchEvent.FOCUS_TAG) {
