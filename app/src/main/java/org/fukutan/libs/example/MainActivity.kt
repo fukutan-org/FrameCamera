@@ -1,27 +1,29 @@
 package org.fukutan.libs.example
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import com.bumptech.glide.Glide
+import androidx.appcompat.app.AppCompatActivity
+import org.fukutan.libs.example.fragment.MenuFragment
+import org.fukutan.libs.example.fragment.ThumbnailsFragment
 import org.fukutan.libs.framecamera.CameraActivity
-import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),
+    MenuFragment.OnFragmentInteractionListener,
+    ThumbnailsFragment.OnFragmentInteractionListener {
+
+    private var result: CameraActivity.CaptureImageResult? = null
+
+    override fun onFragmentInteraction() : CameraActivity.CaptureImageResult? {
+        return result
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        CameraActivity.startCameraActivity(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        val result = CameraActivity.getResult(requestCode, resultCode, data)
-        result?.also {
-            Glide.with(this).load(it.filePathList?.first()).fitCenter().into(captureImage)
-        }
-//        finish()
+        super.onActivityResult(requestCode, resultCode, data)
+        result = CameraActivity.getResult(requestCode, resultCode, data)
     }
 }

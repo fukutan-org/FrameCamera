@@ -21,6 +21,7 @@ import org.fukutan.libs.framecamera.util.Util
 import org.fukutan.libs.framecamera.view.AutoFitTextureView
 import java.io.FileOutputStream
 import android.hardware.camera2.CameraCharacteristics
+import android.util.Log
 import org.fukutan.libs.framecamera.util.CaptureRequestHelper
 
 
@@ -49,11 +50,18 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     get() {
         return cameraManager.getCameraCharacteristics(cameraId)
     }
+
     private val _fileList = mutableListOf<String>()
     val fileList: ArrayList<String>?
     get() {
         return if (_fileList.isEmpty()) null else ArrayList(_fileList.reversed())
     }
+
+    private val _thumbnailList = mutableListOf<String>()
+    val thumbnailList: ArrayList<String>?
+        get() {
+            return if (_thumbnailList.isEmpty()) null else ArrayList(_thumbnailList.reversed())
+        }
 
     fun setPermissionChecker(checker: () -> Boolean) {
         permissionChecker = checker
@@ -69,6 +77,8 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
 
     @SuppressLint("MissingPermission")
     fun openCamera(activity: Activity, textureView: AutoFitTextureView) {
+
+        Log.d("camera", "openCamera")
 
         permissionChecker?.also {
             if ( !it.invoke() ) {
@@ -123,6 +133,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     @SuppressLint("Recycle")
     private fun createPreviewSession() {
 
+        Log.d("Camera", "createPreviewSession")
         if (cameraDevice == null) {
             return
         }
@@ -215,20 +226,11 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
 
             soundPlayer.play()
 
-            val img = it.acquireLatestImage()
-            val buffer = img.planes[0].buffer
-            val bytes = ByteArray(buffer.capacity())
-            buffer.get(bytes)
+            val path    = CameraUtil.createImageInCatchDir(context, it)
+            val tpath   = CameraUtil.createThumbnailInCatchDir(context, path)
 
-            // 画像の書き込み
-            val file = CameraUtil.makePhotoFilePathForCacheDirectory(context)
-            val output = FileOutputStream( file )
-            output.write(bytes)
-            output.close()
-
-            img.close()
-
-            _fileList.add(file.path)
+            _fileList.add(path)
+            _thumbnailList.add(tpath)
             onSuccessCapture?.invoke()
 
             repeatingRequest?.also { request ->

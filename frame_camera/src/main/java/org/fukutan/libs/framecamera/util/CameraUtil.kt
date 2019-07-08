@@ -19,14 +19,13 @@ import java.io.File
 import java.lang.Math.max
 import java.util.*
 import kotlin.collections.ArrayList
-import android.opengl.ETC1.getWidth
-import android.opengl.ETC1.getHeight
-import android.R.attr.orientation
-import android.content.res.Configuration
 import android.util.Range
 import android.hardware.camera2.CameraAccessException
-
-
+import android.media.ImageReader
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 
 
 class CameraUtil {
@@ -34,6 +33,7 @@ class CameraUtil {
     companion object {
 
         private const val PREFIX = "photo_"
+        private const val THUMBNAIL_PREFIX = "thumbnail_"
         private const val EXTENSION = ".jpg"
         private val ORIENTATIONS = SparseIntArray()
 
@@ -93,9 +93,15 @@ class CameraUtil {
             return null
         }
 
-        fun makePhotoFilePathForCacheDirectory(context: Context) : File {
+        private fun makePhotoFilePathForCacheDirectory(context: Context) : File {
 
             val name = PREFIX + System.currentTimeMillis().toString()
+            return File(context.cacheDir.path + File.separator + name + EXTENSION)
+        }
+
+        private fun makeThumbnailFilePathForCacheDirectory(context: Context) : File {
+
+            val name = THUMBNAIL_PREFIX + System.currentTimeMillis().toString()
             return File(context.cacheDir.path + File.separator + name + EXTENSION)
         }
 
@@ -280,7 +286,43 @@ class CameraUtil {
                 e.printStackTrace()
                 return null
             }
+        }
 
+        fun createImageInCatchDir(context: Context, imageReader: ImageReader) : String {
+
+            context.resources.configuration.
+
+            val img = imageReader.acquireLatestImage()
+            val buffer = img.planes[0].buffer
+            val bytes = ByteArray(buffer.capacity())
+            buffer.get(bytes)
+
+            // 画像の書き込み
+            val file = makePhotoFilePathForCacheDirectory(context)
+            Util.writeFile(file, bytes)
+            img.close()
+
+            return file.path
+        }
+
+        fun createThumbnailInCatchDir(context: Context, path: String) : String {
+
+            val thumbnailSIze = 150
+
+            val fis = FileInputStream(path)
+            var imageBitmap = BitmapFactory.decodeStream(fis)
+
+            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, thumbnailSIze, thumbnailSIze, false)
+
+            val baos = ByteArrayOutputStream()
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            val bytes = baos.toByteArray()
+
+            // 画像の書き込み
+            val file = makeThumbnailFilePathForCacheDirectory(context)
+            Util.writeFile(file, bytes)
+
+            return file.path
         }
     }
 }

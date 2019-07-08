@@ -8,14 +8,15 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.Window
 import android.view.animation.AnimationUtils
+import androidx.fragment.app.FragmentActivity
 import kotlinx.android.synthetic.main.camera_preview.*
 
 class CameraActivity : AppCompatActivity() {
@@ -23,33 +24,31 @@ class CameraActivity : AppCompatActivity() {
     private var shutterClick: (() -> Unit)? = null
     private lateinit var camera: Camera
 
-    class CaptureImageResult(fileList: ArrayList<String>?) {
+    class CaptureImageResult(fileList: ArrayList<String>?, thumbnailList: ArrayList<String>?) {
 
-        private val iterator: Iterator<String>?
-        var filePathList: List<String>? = null
-        init {
-            filePathList = fileList?.toList()
-            iterator = filePathList?.iterator()
-        }
+        var filePathList = fileList?.toList() ?: listOf()
+        var thumbnailList = thumbnailList?.toList() ?: listOf()
+        private val iterator = filePathList.iterator()
 
         fun nextImage() : Bitmap? {
-            return BitmapFactory.decodeFile(iterator?.next())
+            return BitmapFactory.decodeFile(iterator.next())
         }
     }
 
     companion object {
         private const val REQUEST_CODE = 1
         private const val TAG = "CameraActivity"
-        private const val BUNDLE_KEY = "CaptureFilePathList"
+        private const val CAPTURE_LIST = "CaptureFilePathList"
+        private const val THUMBNAIL_LIST = "ThumbnailFilePathList"
 
         const val REQUEST_CODE_CAMERA = 1000
         const val RESULT_FAILED = -1000
         const val RESULT_CANCELED = Activity.RESULT_CANCELED
 
-        fun startCameraActivity(activity: Activity) {
+        fun startCameraActivity(activity: FragmentActivity?) {
 
             val intent = Intent(activity, CameraActivity::class.java)
-            activity.startActivityForResult(intent, REQUEST_CODE_CAMERA)
+            activity?.startActivityForResult(intent, REQUEST_CODE_CAMERA)
         }
 
         fun getResult(requestCode: Int, resultCode: Int, data: Intent?) : CaptureImageResult? {
@@ -58,8 +57,9 @@ class CameraActivity : AppCompatActivity() {
 
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        val fileList = data?.getStringArrayListExtra(BUNDLE_KEY)
-                        return fileList?.let { CaptureImageResult(fileList) }
+                        val fileList = data?.getStringArrayListExtra(CAPTURE_LIST)
+                        val thumbnailList = data?.getStringArrayListExtra(THUMBNAIL_LIST)
+                        return fileList?.let { CaptureImageResult(fileList, thumbnailList) }
                     }
                     RESULT_FAILED -> {
                         return null
@@ -70,6 +70,10 @@ class CameraActivity : AppCompatActivity() {
                 }
             }
             return null
+        }
+
+        private fun sendError(error: String) {
+            Log.e(TAG, error)
         }
     }
 
@@ -135,16 +139,15 @@ class CameraActivity : AppCompatActivity() {
 
         setShutterEvent()
         val data = Intent()
-        data.putExtra(BUNDLE_KEY, camera.fileList)
+        data.putExtra(CAPTURE_LIST, camera.fileList)
+        data.putExtra(THUMBNAIL_LIST, camera.thumbnailList)
         setResult(Activity.RESULT_OK, data)
     }
 
     override fun onResume() {
         super.onResume()
 
-        if (textureView.isAvailable) {
-            camera.openCamera(this@CameraActivity, textureView)
-        } else {
+        if (!textureView.isAvailable && textureView.surfaceTextureListener == null) {
 
             textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
 
@@ -194,7 +197,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun failedOpenCamera(error: String) {
-        Log.e(TAG, error)
+        sendError(error)
         setResult(RESULT_FAILED)
         finish()
     }
