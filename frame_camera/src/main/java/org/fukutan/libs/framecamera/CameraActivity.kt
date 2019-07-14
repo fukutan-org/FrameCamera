@@ -13,16 +13,19 @@ import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
+import android.view.OrientationEventListener
 import android.view.TextureView
 import android.view.Window
 import android.view.animation.AnimationUtils
-import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.camera_preview.*
+import org.fukutan.libs.framecamera.util.Util
 
 class CameraActivity : AppCompatActivity() {
 
     private var shutterClick: (() -> Unit)? = null
     private lateinit var camera: Camera
+    private val rotationObserver = RotationObserver()
 
     class CaptureImageResult(fileList: ArrayList<String>?, thumbnailList: ArrayList<String>?) {
 
@@ -45,7 +48,7 @@ class CameraActivity : AppCompatActivity() {
         const val RESULT_FAILED = -1000
         const val RESULT_CANCELED = Activity.RESULT_CANCELED
 
-        fun startCameraActivity(activity: FragmentActivity?) {
+        fun startCameraActivity(activity: Activity?) {
 
             val intent = Intent(activity, CameraActivity::class.java)
             activity?.startActivityForResult(intent, REQUEST_CODE_CAMERA)
@@ -89,11 +92,13 @@ class CameraActivity : AppCompatActivity() {
         camera.setErrorSender(::failedOpenCamera)
         camera.setPermissionChecker(::requestCameraPermission)
         camera.setCapturedCallback(::onSuccessCapture)
+        camera.setRotationObserver(rotationObserver)
 
         actionBar?.hide()
     }
 
     private fun setupUI() {
+
         val small = AnimationUtils.loadAnimation(this, R.anim.down_scale)
         val normal = AnimationUtils.loadAnimation(this, R.anim.normal_scale)
 
@@ -123,6 +128,8 @@ class CameraActivity : AppCompatActivity() {
             }
             true
         }
+
+        OrientationLiveData(this).observe(this, rotationObserver)
     }
 
     private fun setShutterEvent() {

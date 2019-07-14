@@ -19,10 +19,10 @@ import org.fukutan.libs.framecamera.enums.CameraType
 import org.fukutan.libs.framecamera.util.CameraUtil
 import org.fukutan.libs.framecamera.util.Util
 import org.fukutan.libs.framecamera.view.AutoFitTextureView
-import java.io.FileOutputStream
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import org.fukutan.libs.framecamera.util.CaptureRequestHelper
+import kotlin.collections.ArrayList
 
 
 class Camera(private val context: Context, private var surfaceTexture: SurfaceTexture? = null) {
@@ -45,17 +45,18 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
     private var errorSender: ((message: String) -> Unit)? = null
     private var onSuccessCapture: (() -> Unit)? = null
     private var soundPlayer = SoundPlayer(context.assets.openFd("sound_shutter.wav"))
+    private var rotationObserver: RotationObserver? = null
 
     private val cameraCharacteristics: CameraCharacteristics
-    get() {
-        return cameraManager.getCameraCharacteristics(cameraId)
-    }
+        get() {
+            return cameraManager.getCameraCharacteristics(cameraId)
+        }
 
     private val _fileList = mutableListOf<String>()
     val fileList: ArrayList<String>?
-    get() {
-        return if (_fileList.isEmpty()) null else ArrayList(_fileList.reversed())
-    }
+        get() {
+            return if (_fileList.isEmpty()) null else ArrayList(_fileList.reversed())
+        }
 
     private val _thumbnailList = mutableListOf<String>()
     val thumbnailList: ArrayList<String>?
@@ -73,6 +74,10 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
 
     fun setCapturedCallback(callback: () -> Unit) {
         onSuccessCapture = callback
+    }
+
+    fun setRotationObserver(observer: RotationObserver) {
+        rotationObserver = observer
     }
 
     @SuppressLint("MissingPermission")
@@ -210,6 +215,7 @@ class Camera(private val context: Context, private var surfaceTexture: SurfaceTe
                     val characteristic = cameraCharacteristics
                     val dOrientation = Util.getDeviceOrientation(context)
                     val orientation = CameraUtil.getJpegOrientation(characteristic, dOrientation)
+                    Log.d("Camera", "device orientation: $dOrientation, jpeg orientation: $orientation")
                     builder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
 
                     val cameraCallback = CameraCaptureCallback(cameraTouchEvent, imageReader, context)

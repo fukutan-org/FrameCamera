@@ -105,23 +105,25 @@ class CameraUtil {
             return File(context.cacheDir.path + File.separator + name + EXTENSION)
         }
 
-        fun getJpegOrientation(c: CameraCharacteristics, deviceOrientation: Int): Int {
+        fun getJpegOrientation(c: CameraCharacteristics, dOrientation: Int): Int {
 
-            var orientation = deviceOrientation
-            if (orientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0
+            val deviceOrientation = dOrientation
+            if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0
             val sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
 
             // Round device orientation to a multiple of 90
-            orientation = (orientation + 45) / 90 * 90
+//            orientation = (orientation + 45) / 90 * 90
+            var surfaceRotation = ORIENTATIONS.get(deviceOrientation)
 
             // Reverse device orientation for front-facing cameras
             val facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
-            if (facingFront) orientation = -orientation
+            if (facingFront) surfaceRotation = -surfaceRotation
 
             // Calculate desired JPEG orientation relative to camera orientation to make
             // the image upright relative to the device orientation
 
-            return (sensorOrientation + orientation + 360) % 360
+//            return (sensorOrientation + deviceOrientation + 360) % 360
+            return (surfaceRotation + sensorOrientation + 270) % 360
         }
 
         fun getFocusAreaRectAngleForTouchMode(c: CameraCharacteristics, event: MotionEvent, touchView: View) : MeteringRectangle? {
@@ -290,8 +292,6 @@ class CameraUtil {
 
         fun createImageInCatchDir(context: Context, imageReader: ImageReader) : String {
 
-            context.resources.configuration.
-
             val img = imageReader.acquireLatestImage()
             val buffer = img.planes[0].buffer
             val bytes = ByteArray(buffer.capacity())
@@ -312,7 +312,8 @@ class CameraUtil {
             val fis = FileInputStream(path)
             var imageBitmap = BitmapFactory.decodeStream(fis)
 
-            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, thumbnailSIze, thumbnailSIze, false)
+            val antiAlias = true
+            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, thumbnailSIze, thumbnailSIze, antiAlias)
 
             val baos = ByteArrayOutputStream()
             imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
